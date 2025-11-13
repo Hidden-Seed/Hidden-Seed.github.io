@@ -1,0 +1,567 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>计算机体系结构（一） - 量化分析与设计基础 | HiddenSeed</title><meta name="author" content="Knight"><meta name="copyright" content="Knight"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="计算机体系结构第一章学习笔记：基本的量化分析原理与方法。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="计算机体系结构（一） - 量化分析与设计基础">
+<meta property="og:url" content="https://www.hiddenseed.top/posts/2815a773/index.html">
+<meta property="og:site_name" content="HiddenSeed">
+<meta property="og:description" content="计算机体系结构第一章学习笔记：基本的量化分析原理与方法。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/Knight112357/PicGo@main/img/blog-post/Computer-Architecture-cover.png">
+<meta property="article:published_time" content="2025-11-09T14:35:18.000Z">
+<meta property="article:modified_time" content="2025-11-13T15:07:56.325Z">
+<meta property="article:author" content="Knight">
+<meta property="article:tag" content="学习笔记">
+<meta property="article:tag" content="计算机体系结构">
+<meta property="article:tag" content="计算机体系结构 - 量化研究方法">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://cdn.jsdelivr.net/gh/Knight112357/PicGo@main/img/blog-post/Computer-Architecture-cover.png"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "计算机体系结构（一） - 量化分析与设计基础",
+  "url": "https://www.hiddenseed.top/posts/2815a773/",
+  "image": "https://cdn.jsdelivr.net/gh/Knight112357/PicGo@main/img/blog-post/Computer-Architecture-cover.png",
+  "datePublished": "2025-11-09T14:35:18.000Z",
+  "dateModified": "2025-11-13T15:07:56.325Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "Knight",
+      "url": "https://www.hiddenseed.top"
+    }
+  ]
+}</script><link rel="shortcut icon" href="https://cdn.jsdelivr.net/gh/Knight112357/PicGo@main/img/profile_photo_2.jpg"><link rel="canonical" href="https://www.hiddenseed.top/posts/2815a773/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="stylesheet" href="/css/index.css?v=5.5.2"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@7.1.0/css/all.min.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui@6.1.4/dist/fancybox/fancybox.min.css" media="print" onload="this.media='all'"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        if (!ttl) return
+        const expiry = Date.now() + ttl * 86400000
+        localStorage.setItem(key, JSON.stringify({ value, expiry }))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return undefined
+        const { value, expiry } = JSON.parse(itemStr)
+        if (Date.now() > expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return value
+      }
+    }
+
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        Object.entries(attr).forEach(([key, val]) => script.setAttribute(key, val))
+        script.onload = script.onreadystatechange = () => {
+          if (!script.readyState || /loaded|complete/.test(script.readyState)) resolve()
+        }
+        script.onerror = reject
+        document.head.appendChild(script)
+      }),
+      getCSS: (url, id) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onload = link.onreadystatechange = () => {
+          if (!link.readyState || /loaded|complete/.test(link.readyState)) resolve()
+        }
+        link.onerror = reject
+        document.head.appendChild(link)
+      }),
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!false && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          const mediaQueryDark = window.matchMedia('(prefers-color-scheme: dark)')
+          const mediaQueryLight = window.matchMedia('(prefers-color-scheme: light)')
+
+          if (theme === undefined) {
+            if (mediaQueryLight.matches) activateLightMode()
+            else if (mediaQueryDark.matches) activateDarkMode()
+            else {
+              const hour = new Date().getHours()
+              const isNight = hour <= 6 || hour >= 18
+              isNight ? activateDarkMode() : activateLightMode()
+            }
+            mediaQueryDark.addEventListener('change', () => {
+              if (saveToLocal.get('theme') === undefined) {
+                e.matches ? activateDarkMode() : activateLightMode()
+              }
+            })
+          } else {
+            theme === 'light' ? activateLightMode() : activateDarkMode()
+          }
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"/search.json","preload":true,"top_n_per_article":1,"unescape":true,"pagination":{"enable":true,"hitsPerPage":8},"languages":{"hits_empty":"未找到符合您查询的内容：${query}","hits_stats":"共找到 ${hits} 篇文章"}},
+  translate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false,"highlightFullpage":false,"highlightMacStyle":false},
+  copy: {
+    success: '复制成功',
+    error: '复制失败',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: {"limitCount":100,"languages":{"author":"作者: Knight","link":"链接: ","source":"来源: HiddenSeed","info":"著作权归作者所有。商业转载请联系作者获得授权，非商业转载请注明出处。"}},
+  lightbox: 'fancybox',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid@4.12.0/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: true,
+  percent: {
+    toc: true,
+    rightside: true,
+  },
+  autoDarkmode: true
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: '计算机体系结构（一） - 量化分析与设计基础',
+  isHighlightShrink: false,
+  isToc: true,
+  pageType: 'post'
+}</script><meta name="generator" content="Hexo 8.1.1"></head><body><script>window.paceOptions = {
+  restartOnPushState: false
+}
+
+btf.addGlobalFn('pjaxSend', () => {
+  Pace.restart()
+}, 'pace_restart')
+
+</script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pace-js@latest/themes/blue/pace-theme-barber-shop.css"/><script src="https://cdn.jsdelivr.net/npm/pace-js@1.2.4/pace.min.js"></script><div id="web_bg" style="background-image: url(https://cdn.jsdelivr.net/gh/Knight112357/PicGo@main/img/blog-config/background.png);"></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img text-center"><img src="https://raw.githubusercontent.com/Knight112357/PicGo/main/img/profile_photo_0.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data text-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">1</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">3</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">1</div></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> Home</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> Categories</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> Tags</span></a></div><div class="menus_item"><a class="site-page" href="/shuoshuo/"><i class="fa-fw fas fa-comment"></i><span> 说说</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> Link</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> About</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url(https://cdn.jsdelivr.net/gh/Knight112357/PicGo@main/img/blog-post/Computer-Architecture-top.png);"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><span class="site-name">HiddenSeed</span></a><a class="nav-page-title" href="/"><span class="site-name">计算机体系结构（一） - 量化分析与设计基础</span><span class="site-name"><i class="fa-solid fa-circle-arrow-left"></i><span>  返回首页</span></span></a></span><div id="menus"><div id="search-button"><span class="site-page social-icon search"><i class="fas fa-search fa-fw"></i><span> 搜索</span></span></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> Home</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> Categories</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> Tags</span></a></div><div class="menus_item"><a class="site-page" href="/shuoshuo/"><i class="fa-fw fas fa-comment"></i><span> 说说</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> Link</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> About</span></a></div></div><div id="toggle-menu"><span class="site-page"><i class="fas fa-bars fa-fw"></i></span></div></div></nav><div id="post-info"><h1 class="post-title">计算机体系结构（一） - 量化分析与设计基础</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2025-11-09T14:35:18.000Z" title="发表于 2025-11-09 22:35:18">2025-11-09</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2025-11-13T15:07:56.325Z" title="更新于 2025-11-13 23:07:56">2025-11-13</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E7%A7%91%E5%AD%A6%E6%8A%80%E6%9C%AF-%E8%AE%A1%E7%AE%97%E6%9C%BA%E4%BD%93%E7%B3%BB%E7%BB%93%E6%9E%84/">科学技术 - 计算机体系结构</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">总字数:</span><span class="word-count">3.3k</span><span class="post-meta-separator">|</span><i class="far fa-clock fa-fw post-meta-icon"></i><span class="post-meta-label">阅读时长:</span><span>13分钟</span></span><span class="post-meta-separator">|</span><span id="" data-flag-title=""><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">浏览量:</span><span id="umamiPV" data-path="/posts/2815a773/"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><h1 id="第一章-量化分析与设计基础"><a href="#第一章-量化分析与设计基础" class="headerlink" title="第一章  量化分析与设计基础"></a>第一章  量化分析与设计基础</h1><h2 id="1-体系结构的复兴"><a href="#1-体系结构的复兴" class="headerlink" title="1. 体系结构的复兴"></a>1. 体系结构的复兴</h2><p>摩尔定律：晶体管数量的指数级增长（已终结）</p>
+<p>登纳德缩放比例定律：功率密度的恒定（已终结）</p>
+<div class="note info flat"><p><strong>体系结构</strong></p>
+<p>指令集设计（不包含实现）$\rightarrow$ 组成+硬件</p>
+</div>
+<p>技术趋势：1. 带宽胜过延迟；2. 连线的困难。</p>
+<p>指令级并行$\rightarrow$数据级并行$\rightarrow$线程级并行</p>
+<h2 id="2-量化分析方法"><a href="#2-量化分析方法" class="headerlink" title="2. 量化分析方法"></a>2. 量化分析方法</h2><h3 id="2-1-功耗（Power）与能耗（Energy）"><a href="#2-1-功耗（Power）与能耗（Energy）" class="headerlink" title="2.1 功耗（Power）与能耗（Energy）"></a>2.1 功耗（Power）与能耗（Energy）</h3><script type="math/tex; mode=display">
+\text{Energy}_\text{dynamic} \propto 1/2 \times \text{Capacitive load} \times \text{Voltage}^{2}</script><script type="math/tex; mode=display">
+\text{Power}_\text{dynamic} \propto 1/2 \times \text{Capacitive load} \times \text{Voltage}^{2} \times \text{Frequency switched}</script><script type="math/tex; mode=display">
+\text{Power}_\text{static} \propto \text{Current}_\text{static} \times \text{Voltage}</script><ul>
+<li>Do nothing well</li>
+<li>Dynamic voltage-frequency scaling (DVFS)</li>
+<li>Design for the typical case</li>
+<li>Overclocking</li>
+</ul>
+<h3 id="2-2-成本"><a href="#2-2-成本" class="headerlink" title="2.2 成本"></a>2.2 成本</h3><p>时间、产量、大众化</p>
+<p><strong>集成电路的成本</strong></p>
+<script type="math/tex; mode=display">
+\text{wafer} \xrightarrow{\text{tested and chopped}} \text{die}</script><script type="math/tex; mode=display">
+\text{Cost of integrated circuit} = \frac{\text{Cost of die} + \text{Cost of testing die} + \text{Cost of packaging and final test}}{\text{Final test yield}}</script><script type="math/tex; mode=display">
+\text{Cost of die} = \frac{\text{Cost of wafer}}{\text{Dies per wafer} \times \text{Die yield}}</script><script type="math/tex; mode=display">
+\text{Dies per wafer} = \frac{\pi \times {(\text{Wafer diameter}/2)}^2}{\text{Die area}} - \frac{\pi \times \text{Wafer diameter}}{\sqrt{\pi \times \text{Die area}}}</script><script type="math/tex; mode=display">
+\text{Die yield} = \text{Wafer yield} \times (1 + \text{Defects per unit area} \times \text{Die area})^{N}</script><div class="note info flat"><p>制造工艺决定了晶圆成本、晶圆良率和  单位面积上的缺陷数，所以设计人员唯一能够控制的就是<strong>晶片面积</strong>。</p>
+</div>
+<h3 id="2-3-可信任度"><a href="#2-3-可信任度" class="headerlink" title="2.3 可信任度"></a>2.3 可信任度</h3><h4 id="2-3-1-模块可靠性（Module-reliability）"><a href="#2-3-1-模块可靠性（Module-reliability）" class="headerlink" title="2.3.1 模块可靠性（Module reliability）"></a>2.3.1 模块可靠性（Module reliability）</h4><p><strong>平均无故障时间</strong>（mean time to failure, MTTF）</p>
+<p><strong>故障率</strong>（rate of failure = 1/MTTF）：通常以运行10亿小时发生的 故障数来表示，被称为FIT（failures in time）</p>
+<script type="math/tex; mode=display">
+1\, \text{FIT} = 1\, \text{failure per } 10^9 \text{ hours}</script><script type="math/tex; mode=display">
+\lambda \text{(failures/hour)} = \frac{\text{FIT}}{10^9}</script><script type="math/tex; mode=display">
+\text{FIT} = \lambda \times 10^9 = \frac{10^9}{\text{MTTF}}</script><p><strong>平均修复时间</strong>（mean time to repair, MTTR）</p>
+<p><strong>平均故障间隔时间</strong>（mean time between failures, MTBF）= MTTF + MTTR</p>
+<p>如果一组模块的生存期呈指数分布，也就是说模块的老化对于故障概率的影响不大，那么「这一组模块的整体故障率就是这些模块的  故障率之和」。</p>
+<p>一个模块的寿命 $T$ 服从指数分布：</p>
+<script type="math/tex; mode=display">
+f(t) = \lambda e^{-\lambda t}, \quad t \ge 0</script><p>其中 $\lambda$ 是<strong>故障率（failure rate）</strong>。</p>
+<p>指数分布的特点：<strong>无记忆性（memoryless）</strong></p>
+<script type="math/tex; mode=display">
+P(T > t + s \mid T > s) = P(T > t)</script><p>假设系统中有 $n$ 个模块，它们<strong>相互独立</strong>，且寿命都服从指数分布：</p>
+<script type="math/tex; mode=display">
+\text{模块 } i: f_i(t) = \lambda_i e^{-\lambda_i t}</script><p>系统在「任一模块失效」时就算<strong>系统失效</strong>（即串联系统）。</p>
+<p>系统可靠性函数（即“系统存活到 t 的概率”）为：</p>
+<script type="math/tex; mode=display">
+R_{\text{sys}}(t) = e^{-(\lambda_1 + \lambda_2 + \cdots + \lambda_n)t}</script><p>这仍然是一个指数分布，参数是所有模块 λ 的和。</p>
+<p><strong>系统故障率</strong>由上式可得：</p>
+<script type="math/tex; mode=display">
+\lambda_{\text{sys}} = \lambda_1 + \lambda_2 + \cdots + \lambda_n</script><h4 id="2-3-2-模块可用性（-Module-availability）"><a href="#2-3-2-模块可用性（-Module-availability）" class="headerlink" title="2.3.2 模块可用性（ Module availability）"></a>2.3.2 模块可用性（ Module availability）</h4><script type="math/tex; mode=display">
+\text{Module availability} = \frac{\text{MTTF}}{\text{MTTF} + \text{MTTR}}</script><h4 id="2-3-3-一个例子"><a href="#2-3-3-一个例子" class="headerlink" title="2.3.3 一个例子"></a>2.3.3 一个例子</h4><p>磁盘子系统经常备有冗余电源，以提高可信任度。假设一个电源足以运行磁盘子系统，而且我们要添加一个冗余电源。 </p>
+<p>我们需要一个公式来表明当可以容忍一个故障并仍能提供服务时的情景。为了简化计算，假定组件的生存期呈指数分布，而且组件故障之间没有相关性。</p>
+<div class="note info flat"><p>冗余电源对的MTTF就是两个量的比值，分子是从初始时刻到一个电源发生故障的平均时间， 分母是在更换第一个电源之前另一个电源也发生故障的概率。</p>
+</div>
+<p>因此，如果在修复第  一个故障之前发生第二个故障的可能性很小，那么电源对的MTTF就很大。 由于我们有两个电源，而且故障独立，所以在一个电源发生故障之前的平均时间为$\text{MTTF}_\text{电源} / 2$。发生第二个故障的概率有一个很好的近似：用MTTR除以另一个电源  发生故障之前的平均时间。因此，冗余电源对的合理近似为：</p>
+<script type="math/tex; mode=display">
+\text{MTTF}_{\text{power supply pair}} = \dfrac{\text{MTTF}_{\text{power supply}}/2}{\dfrac{\text{MTTR}_{\text{power supply}}}{\text{MTTF}_{\text{power supply}}}} = \dfrac{\text{MTTF}_{\text{power supply}}^2 / 2}{\text{MTTR}_{\text{power supply}}} = \dfrac{\text{MTTF}_{\text{power supply}}^2}{2 \times \text{MTTR}_{\text{power supply}}}</script><p>$\text{MTTF}<em>{\text{power supply}} = 2000 \text{ h}$，$\text{MTTR}</em>{\text{power supply}} = 24 \text{ h}$，则 $\text{MTTF}_{\text{power supply pair}} \approx 833 333 333 \text{ h}$，提高约4150倍</p>
+<h3 id="2-4-性能"><a href="#2-4-性能" class="headerlink" title="2.4 性能"></a>2.4 性能</h3><script type="math/tex; mode=display">
+n = \cfrac{\text{Execution time}_{Y}}{\text{Execution time}_{X}} = \dfrac{\dfrac{1}{\text{Performance}_{Y}}}{\dfrac{1}{\text{Performance}_{X}}} = \dfrac{\text{Performance}_{X}}{\text{Performance}_{Y}}</script><p> <strong>SPEC基准测试</strong>：<a target="_blank" rel="noopener" href="https://www.spec.org/">SPEC - Standard Performance Evaluation Corporation</a></p>
+<p>桌面基准测、服务器基准测试</p>
+<p><strong>SPECRatio</strong>：将基准计 算机上的执行时间除以待评估计算机上的执行时间，得到一个与性能成正比的比值。</p>
+<p>对于每个基准程序 $i$，定义：</p>
+<script type="math/tex; mode=display">
+\text{SPECRatio}_i = \frac{\text{Reference Time}_i}{\text{Test System Time}_i}</script><script type="math/tex; mode=display">
+\text{SPECint (或 SPECfp)} = \left( \prod_{i=1}^{n} \text{SPECRatio}_i \right)^{1/n}</script><div class="note info flat"><p>几何平均值之比等于性能比值的几何平均值，且$\text{SPECRatio}$基准计算机的选择无关紧要。</p>
+<script type="math/tex; mode=display">
+\dfrac{\text{Geometric mean}_\text{A}}{\text{Geometric mean}_\text{B}} = \dfrac{\sqrt[n]{\displaystyle \prod_{i=1}^{n} \text{SPECRatio A}_i}}{\sqrt[n]{\displaystyle \prod_{i=1}^{n} \text{SPECRatio B}_i}} = \sqrt[n]{\prod_{i=1}^{n} \dfrac{\text{SPECRatio A}_i}{\text{SPECRatio B}_i}}</script><script type="math/tex; mode=display">
+ = \sqrt[n]{\prod_{i=1}^{n} \dfrac{\dfrac{\text{Execution time}_{\text{reference}_i}}{\text{Execution time}_{\text{A}_i}}}{\dfrac{\text{Execution time}_{\text{reference}_i}}{\text{Execution time}_{\text{B}_i}}}} = \sqrt[n]{\prod_{i=1}^{n} \dfrac{\text{Execution time}_{\text{B}_i}}{\text{Execution time}_{\text{A}_i}}} = \sqrt[n]{\prod_{i=1}^{n} \dfrac{\text{Performance}_{\text{B}_i}}{\text{Performance}_{\text{A}_i}}}</script></div>
+<h2 id="3-计算机设计的量化原理"><a href="#3-计算机设计的量化原理" class="headerlink" title="3. 计算机设计的量化原理"></a>3. 计算机设计的量化原理</h2><ul>
+<li><strong>提高并行性</strong></li>
+<li><strong>局部性原理</strong>（空间局部+时间局部）</li>
+<li><strong>重点关注常见情形</strong></li>
+</ul>
+<h3 id="3-1-Amdahl‘s-Law"><a href="#3-1-Amdahl‘s-Law" class="headerlink" title="3.1 Amdahl‘s Law"></a>3.1 Amdahl‘s Law</h3><p>加速比（Speedup）</p>
+<script type="math/tex; mode=display">
+\text{Speedup} = \dfrac{\text{Performance for entire task using the enhancement when possible}}{\text{
+Performance for entire task without using the enhancement}}</script><script type="math/tex; mode=display">
+\text{Speedup} = \dfrac{\text{Execution time for entire task without using the enhancement}}{\text{Execution time for entire task using the enhancement when possible
+}}</script><p>加速比取决于下面两个因素：</p>
+<ul>
+<li>原计算机计算时间中可改进部分所占的比例：<strong>改进比例</strong>（$\text{Fraction}_\text{enhanced}$），小于或等于1。</li>
+<li>通过改进执行模式得到的改进，也就是说在为整个程序使用这一执行模式时，任务的运行速度会提高多少倍：<strong>改进加速比</strong>（$\text{Speedup}_\text{enhanced}$），大于1。</li>
+</ul>
+<script type="math/tex; mode=display">
+\text{Execution time}_\text{new} = \text{Execution time}_\text{old} \times \left ( (1 - \text{Fraction}_\text{enhanced}) + \dfrac{\text{Fraction}_\text{enhanced}}{\text{Speedup}_\text{enhanced}} \right )</script><script type="math/tex; mode=display">
+\text{Speedup}_\text{overall} = \dfrac{\text{Execution time}_\text{old}}{\text{Execution time}_\text{new}} = \dfrac{1}{(1 - \text{Fraction}_\text{enhanced}) + \dfrac{\text{Fraction}_\text{enhanced}}{\text{Speedup}_\text{enhanced}}}</script><h3 id="3-2-处理器性能公式"><a href="#3-2-处理器性能公式" class="headerlink" title="3.2 处理器性能公式"></a>3.2 处理器性能公式</h3><p><strong>程序的CPU时间</strong>表示：</p>
+<script type="math/tex; mode=display">
+\text{CPU time} = \text{CPU clock cycles for a program} \times  \text{Clock cycle time}</script><script type="math/tex; mode=display">
+\text{CPU time} = \dfrac{\text{CPU clock cycles for a program}}{\text{Clock rate}}</script><p><strong>指令路径长度</strong>或<strong>指令数</strong>（instruction count, IC）：计算所执行的指令数。</p>
+<p><strong>每条指令的时钟周期数</strong>（clock cycles per instruction, <strong>CPI</strong>）的平均值：</p>
+<script type="math/tex; mode=display">
+\text{CPI} = \dfrac{\text{CPU clock cycles for a program}}{\text{Instruction count}}</script><script type="math/tex; mode=display">
+ \text{Clock cycles} = \text{IC} \times \text{CPI}</script><script type="math/tex; mode=display">
+\text{CPU time} = \text{Instruction count} \times \text{Cycles per instruction} \times \text{Clock cycle time}</script><script type="math/tex; mode=display">
+= \dfrac{\text{Instructions}}{\text{Program}} \times \dfrac{\text{Clock cycles}}{\text{Instruction}} \times \dfrac{\text{Seconds}}{\text{Clock cycle}} = \dfrac{\text{Seconds}}{\text{Program}}</script><div class="note info flat"><p>处理器性能取决于3个特性：时钟周期（或时钟频率）、每条指令的时钟 周期数和指令数。</p>
+<p>CPU时间也取决于这3个特性：3个特性中任意一项改进10%,  将使CPU时间改进10%。</p>
+<ul>
+<li><strong>时钟周期时间</strong>：硬件技术与组成。 </li>
+<li><strong>CPI</strong>：组成与指令集体系结构。</li>
+<li><strong>指令数</strong>：指令集体系结构和编译器技术。 </li>
+</ul>
+</div>
+<script type="math/tex; mode=display">
+\text{CPU clock cycles} = \sum_{i=1}^{n}{\text{IC}_i \times \text{CPI}_i}</script><ul>
+<li>$\text{IC}_i$：一个程序中第i个指令的执行次数；</li>
+<li>$\text{CPI}_i$：示第i个指令的每条指令平均时钟周期数。</li>
+</ul>
+<script type="math/tex; mode=display">
+\text{CPU time} = \left( \sum_{i=1}^{n}{\text{IC}_i \times \text{CPI}_i} \right) \times \text{Clock cycle time}</script><script type="math/tex; mode=display">
+\text{CPI}_\text{overall} = \dfrac{\displaystyle \sum_{i=1}^{n}{\text{IC}_i \times \text{CPI}_i}}{\text{Instruction count}} = \sum_{i=1}^{n}{\dfrac{\text{IC}_i}{\text{Instruction count}} \times \text{CPI}_i}</script><p> $\text{CPI}$ 的后一种计算形式使用了各个 $\text{CPI}_i$ ，和该指令在一个程序中所占的比例。</p>
+<h2 id="Appendix-A"><a href="#Appendix-A" class="headerlink" title="Appendix A"></a>Appendix A</h2><h3 id="A-1-为什么较新的指令集都不在指令中直接访问存储器，而是通过载入-存储的方式？"><a href="#A-1-为什么较新的指令集都不在指令中直接访问存储器，而是通过载入-存储的方式？" class="headerlink" title="A.1 为什么较新的指令集都不在指令中直接访问存储器，而是通过载入-存储的方式？"></a>A.1 为什么较新的指令集都不在指令中直接访问存储器，而是通过载入-存储的方式？</h3><blockquote>
+<p>✅ 越新的 ISA（如 RISC-V、MIPS、ARM、SPARC）都采用 <strong>Load/Store 架构</strong>，<br>而老架构（如 x86、VAX、PDP-11）则常允许在<strong>任意指令中直接访问内存</strong>。</p>
+</blockquote>
+<h4 id="A-1-1-背景：两种架构风格"><a href="#A-1-1-背景：两种架构风格" class="headerlink" title="A.1.1 背景：两种架构风格"></a>A.1.1 背景：两种架构风格</h4><div class="table-container">
+<table>
+<thead>
+<tr>
+<th>架构类型</th>
+<th>特点</th>
+<th>代表</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>CISC</strong>（Complex Instruction Set Computer）</td>
+<td>一条指令可以直接访问内存、执行复杂操作（如 <code>ADD [mem1], [mem2]</code>）</td>
+<td>x86, VAX, 68000</td>
+</tr>
+<tr>
+<td><strong>RISC</strong>（Reduced Instruction Set Computer）</td>
+<td>只允许专门的 Load/Store 指令访问内存，运算只能在寄存器间进行</td>
+<td>MIPS, ARM, RISC-V</td>
+</tr>
+</tbody>
+</table>
+</div>
+<h4 id="A-1-2-为什么现代-ISA-都采用-Load-Store-架构？"><a href="#A-1-2-为什么现代-ISA-都采用-Load-Store-架构？" class="headerlink" title="A.1.2 为什么现代 ISA 都采用 Load/Store 架构？"></a>A.1.2 为什么现代 ISA 都采用 Load/Store 架构？</h4><p>从 <strong>硬件实现、性能优化、并行化</strong> 的角度，这是必然选择：</p>
+<ol>
+<li><p>简化流水线设计（Pipeline-friendly）</p>
+<p>在早期 CISC 架构中，一条指令可能要取操作码、计算内存地址、发起访存、取回数据、执行算术、写回结果，这使得<strong>一条指令的执行时间无法预测</strong>，很难做到指令级并行（ILP）。而 Load/Store 架构中，Load/Store 指令只做访存；运算指令只做计算。每类指令都有<strong>固定格式和执行阶段</strong>，<strong>易于划分流水线阶段</strong>，提高主频与吞吐量。</p>
+<blockquote>
+<p>📘 典型：MIPS 最早提出 5 级流水线 (IF–ID–EX–MEM–WB)，<br>若算术指令能直接访存，这个结构就会完全被打乱。</p>
+</blockquote>
+</li>
+<li><p>更容易乱序执行和指令重排（Out-of-Order, Superscalar）</p>
+<p>现代 CPU 要并行执行多条指令，需要硬件判断依赖关系。 如果指令可以“随意”访问内存，就必须动态分析：哪些内存地址可能冲突？哪些数据可能重叠？这会极大增加<strong>依赖检查逻辑复杂度</strong>。</p>
+<p>Load/Store 模式下，只有特定指令访问内存，依赖关系主要在寄存器之间，<strong>硬件能快速判定并行性</strong>。</p>
+</li>
+<li><p>易于编译器优化（Compiler-friendly）</p>
+<p>在 CISC 架构下，编译器很难预测哪些指令会访问内存。</p>
+<p>在 RISC 架构中，编译器能明确控制：什么时候 Load？什么时候 Store？哪些数据在寄存器中？</p>
+<p>编译器可以更高效地调度指令、减少访存次数。</p>
+<blockquote>
+<p>📖 这正是 RISC 设计哲学：<br><strong>“让硬件简单，把复杂性交给编译器。”</strong></p>
+</blockquote>
+</li>
+<li><p>减少硬件复杂度与译码逻辑</p>
+<p>CISC 指令格式多变、操作数位置复杂， 导致译码单元必须包含：可变长度解码器，多种寻址模式支持，内存操作调度器。</p>
+<p>Load/Store 架构只需要：固定长度指令（如 RISC-V 的 32 位定长），简单寻址（寄存器 + 立即数），这使得硬件译码速度快，面积小，功耗低。</p>
+</li>
+<li><p>访存延迟与 Cache 不确定性</p>
+<p>访存操作往往是最慢的部分（几十甚至上百个时钟周期）。如果允许算术指令直接访存，那么算术指令执行时间就会随缓存命中率变化，非常不可预测。</p>
+<p>Load/Store 机制则能：把访存延迟与算术延迟分离；通过乱序执行、Load-Store 队列、Cache Miss 重叠等手段隐藏访存延迟。</p>
+</li>
+</ol>
+<blockquote>
+<p>🔹 <strong>“分离存储访问与计算，是现代高性能处理器设计的核心原则。”</strong></p>
+</blockquote>
+<h3 id="A-2-每个晶圆（wafer）上可切割出的芯片（die）数学公式推导"><a href="#A-2-每个晶圆（wafer）上可切割出的芯片（die）数学公式推导" class="headerlink" title="A.2 每个晶圆（wafer）上可切割出的芯片（die）数学公式推导"></a>A.2 每个晶圆（wafer）上可切割出的芯片（die）数学公式推导</h3><ul>
+<li>晶圆直径：$D$</li>
+<li>晶圆半径：$R = \frac{D}{2}$</li>
+<li>单个芯片（die）面积：$A_d$</li>
+</ul>
+<p>如果晶圆是完美的圆，且可以完全填满芯片，那么：</p>
+<script type="math/tex; mode=display">
+N_{\text{ideal}} = \frac{\pi R^2}{A_d}</script><p>就是理论最大芯片数。</p>
+<p>但实际中：边缘的芯片不完整，不能用；晶圆是圆的，芯片是方形的；排列方式（行列）造成浪费。</p>
+<p>所以要<strong>修正边缘损失（edge loss）</strong>。</p>
+<p>经过几何近似（由Texas Instruments早期研究提出），得到常用的经验公式：</p>
+<script type="math/tex; mode=display">
+N = \frac{\pi R^2}{A_d} - \frac{\pi D}{\sqrt{2A_d}}</script><p>或等价写法：</p>
+<script type="math/tex; mode=display">
+N = \frac{\pi (D/2)^2}{A_d} - \frac{\pi D}{\sqrt{2A_d}}</script><p>晶圆边缘周长为 $2\pi R$，假设边缘附近一圈芯片大概率不完整（被切断）。</p>
+<p>每个芯片的有效“边长”约为 $\sqrt{A_d}$。</p>
+<p>沿圆周一圈能放的芯片数量约为：</p>
+<script type="math/tex; mode=display">
+\frac{2\pi R}{\sqrt{A_d}}</script><p>但这些芯片中大约一半面积浪费掉（平均约 50% 被切割），所以要减去一半芯片数：</p>
+<script type="math/tex; mode=display">
+N_{\text{edge loss}} \approx \frac{1}{2} \cdot \frac{2\pi R}{\sqrt{A_d}} = \frac{\pi R}{\sqrt{A_d}}</script><p>将其写成直径形式 $D = 2R$：</p>
+<script type="math/tex; mode=display">
+N_{\text{edge loss}} = \frac{\pi D}{2\sqrt{A_d}} = \frac{\pi D}{\sqrt{2A_d}}</script><p>（不同文献有略微常数差异，此处系数 $\frac{1}{\sqrt{2}}$ 是几何拟合结果）</p>
+<p>于是：</p>
+<script type="math/tex; mode=display">
+N = N_{\text{ideal}} - N_{\text{edge loss}}
+= \frac{\pi R^2}{A_d} - \frac{\pi D}{\sqrt{2A_d}}</script></article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a href="https://www.hiddenseed.top">Knight</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="https://www.hiddenseed.top/posts/2815a773/">https://www.hiddenseed.top/posts/2815a773/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来源 <a href="https://www.hiddenseed.top" target="_blank">HiddenSeed</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/%E8%AE%A1%E7%AE%97%E6%9C%BA%E4%BD%93%E7%B3%BB%E7%BB%93%E6%9E%84/">计算机体系结构</a><a class="post-meta__tags" href="/tags/%E8%AE%A1%E7%AE%97%E6%9C%BA%E4%BD%93%E7%B3%BB%E7%BB%93%E6%9E%84-%E9%87%8F%E5%8C%96%E7%A0%94%E7%A9%B6%E6%96%B9%E6%B3%95/">计算机体系结构 - 量化研究方法</a><a class="post-meta__tags" href="/tags/%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/">学习笔记</a></div><div class="post-share"><div class="social-share" data-image="https://cdn.jsdelivr.net/gh/Knight112357/PicGo@main/img/blog-post/Computer-Architecture-cover.png" data-sites="facebook,x,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.6/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.6/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"></nav></div><div class="aside-content" id="aside-content"><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E7%AC%AC%E4%B8%80%E7%AB%A0-%E9%87%8F%E5%8C%96%E5%88%86%E6%9E%90%E4%B8%8E%E8%AE%BE%E8%AE%A1%E5%9F%BA%E7%A1%80"><span class="toc-text">第一章  量化分析与设计基础</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-%E4%BD%93%E7%B3%BB%E7%BB%93%E6%9E%84%E7%9A%84%E5%A4%8D%E5%85%B4"><span class="toc-text">1. 体系结构的复兴</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-%E9%87%8F%E5%8C%96%E5%88%86%E6%9E%90%E6%96%B9%E6%B3%95"><span class="toc-text">2. 量化分析方法</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#2-1-%E5%8A%9F%E8%80%97%EF%BC%88Power%EF%BC%89%E4%B8%8E%E8%83%BD%E8%80%97%EF%BC%88Energy%EF%BC%89"><span class="toc-text">2.1 功耗（Power）与能耗（Energy）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-2-%E6%88%90%E6%9C%AC"><span class="toc-text">2.2 成本</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-3-%E5%8F%AF%E4%BF%A1%E4%BB%BB%E5%BA%A6"><span class="toc-text">2.3 可信任度</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#2-3-1-%E6%A8%A1%E5%9D%97%E5%8F%AF%E9%9D%A0%E6%80%A7%EF%BC%88Module-reliability%EF%BC%89"><span class="toc-text">2.3.1 模块可靠性（Module reliability）</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#2-3-2-%E6%A8%A1%E5%9D%97%E5%8F%AF%E7%94%A8%E6%80%A7%EF%BC%88-Module-availability%EF%BC%89"><span class="toc-text">2.3.2 模块可用性（ Module availability）</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#2-3-3-%E4%B8%80%E4%B8%AA%E4%BE%8B%E5%AD%90"><span class="toc-text">2.3.3 一个例子</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-4-%E6%80%A7%E8%83%BD"><span class="toc-text">2.4 性能</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-%E8%AE%A1%E7%AE%97%E6%9C%BA%E8%AE%BE%E8%AE%A1%E7%9A%84%E9%87%8F%E5%8C%96%E5%8E%9F%E7%90%86"><span class="toc-text">3. 计算机设计的量化原理</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#3-1-Amdahl%E2%80%98s-Law"><span class="toc-text">3.1 Amdahl‘s Law</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-2-%E5%A4%84%E7%90%86%E5%99%A8%E6%80%A7%E8%83%BD%E5%85%AC%E5%BC%8F"><span class="toc-text">3.2 处理器性能公式</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Appendix-A"><span class="toc-text">Appendix A</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#A-1-%E4%B8%BA%E4%BB%80%E4%B9%88%E8%BE%83%E6%96%B0%E7%9A%84%E6%8C%87%E4%BB%A4%E9%9B%86%E9%83%BD%E4%B8%8D%E5%9C%A8%E6%8C%87%E4%BB%A4%E4%B8%AD%E7%9B%B4%E6%8E%A5%E8%AE%BF%E9%97%AE%E5%AD%98%E5%82%A8%E5%99%A8%EF%BC%8C%E8%80%8C%E6%98%AF%E9%80%9A%E8%BF%87%E8%BD%BD%E5%85%A5-%E5%AD%98%E5%82%A8%E7%9A%84%E6%96%B9%E5%BC%8F%EF%BC%9F"><span class="toc-text">A.1 为什么较新的指令集都不在指令中直接访问存储器，而是通过载入-存储的方式？</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#A-1-1-%E8%83%8C%E6%99%AF%EF%BC%9A%E4%B8%A4%E7%A7%8D%E6%9E%B6%E6%9E%84%E9%A3%8E%E6%A0%BC"><span class="toc-text">A.1.1 背景：两种架构风格</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#A-1-2-%E4%B8%BA%E4%BB%80%E4%B9%88%E7%8E%B0%E4%BB%A3-ISA-%E9%83%BD%E9%87%87%E7%94%A8-Load-Store-%E6%9E%B6%E6%9E%84%EF%BC%9F"><span class="toc-text">A.1.2 为什么现代 ISA 都采用 Load&#x2F;Store 架构？</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#A-2-%E6%AF%8F%E4%B8%AA%E6%99%B6%E5%9C%86%EF%BC%88wafer%EF%BC%89%E4%B8%8A%E5%8F%AF%E5%88%87%E5%89%B2%E5%87%BA%E7%9A%84%E8%8A%AF%E7%89%87%EF%BC%88die%EF%BC%89%E6%95%B0%E5%AD%A6%E5%85%AC%E5%BC%8F%E6%8E%A8%E5%AF%BC"><span class="toc-text">A.2 每个晶圆（wafer）上可切割出的芯片（die）数学公式推导</span></a></li></ol></li></ol></li></ol></div></div></div></div></main><footer id="footer" style="background-color: #CDB38B;"><div class="footer-other"><div class="footer-copyright"><span class="copyright">&copy;&nbsp;2025 By Knight</span><span class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></span></div><div class="footer_custom_text"><span>
+  <a href="http://beian.miit.gov.cn/" target="_blank" rel="noopener">
+    皖ICP备2025096452号-1
+  </a> |
+  <a href="http://www.beian.gov.cn/portal/registerSystemInfo?recordcode=34050302000931" target="_blank" rel="noopener">
+    <img src="https://www.beian.gov.cn/img/new/gongan.png" style="width:16px;height:16px;vertical-align:middle;margin-right:3px;">
+    皖公网安备 34050302000931号
+  </a>
+</span> <br> <span>Sharing Openness Equality Collaboration | Build a better world!</span>
+</div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="日间和夜间模式切换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js?v=5.5.2"></script><script src="/js/main.js?v=5.5.2"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui@6.1.4/dist/fancybox/fancybox.umd.min.js"></script><script src="https://cdn.jsdelivr.net/npm/instant.page@5.2.0/instantpage.min.js" type="module"></script><div class="js-pjax"><script>(() => {
+  const loadMathjax = () => {
+    if (!window.MathJax) {
+      window.MathJax = {
+        loader: {
+          load: [
+            // Four font extension packages (optional)
+            //- '[tex]/bbm',
+            //- '[tex]/bboldx',
+            //- '[tex]/dsfont',
+            '[tex]/mhchem'
+          ],
+          paths: {
+            'mathjax-newcm': '[mathjax]/../@mathjax/mathjax-newcm-font',
+
+            //- // Four font extension packages (optional)
+            //- 'mathjax-bbm-extension': '[mathjax]/../@mathjax/mathjax-bbm-font-extension',
+            //- 'mathjax-bboldx-extension': '[mathjax]/../@mathjax/mathjax-bboldx-font-extension',
+            //- 'mathjax-dsfont-extension': '[mathjax]/../@mathjax/mathjax-dsfont-font-extension',
+            'mathjax-mhchem-extension': '[mathjax]/../@mathjax/mathjax-mhchem-font-extension'
+          }
+        },
+        output: {
+          font: 'mathjax-newcm',
+        },
+        tex: {
+          inlineMath: [['$', '$'], ['\\(', '\\)']],
+          tags: 'none',
+          packages: {
+            '[+]': [
+              'mhchem'
+            ]
+          }
+        },
+        chtml: {
+          scale: 1.1
+        },
+        options: {
+          enableMenu: true,
+          menuOptions: {
+            settings: {
+              enrich: false  // Turn off Braille and voice narration text automatic generation
+            }
+          },
+          renderActions: {
+            findScript: [10, doc => {
+              for (const node of document.querySelectorAll('script[type^="math/tex"]')) {
+                const display = !!node.type.match(/; *mode=display/)
+                const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display)
+                const text = document.createTextNode('')
+                node.parentNode.replaceChild(text, node)
+                math.start = {node: text, delim: '', n: 0}
+                math.end = {node: text, delim: '', n: 0}
+                doc.math.push(math)
+              }
+            }, '']
+          }
+        }
+      }
+
+      const script = document.createElement('script')
+      script.src = 'https://cdn.jsdelivr.net/npm/mathjax@4.0.0/tex-mml-chtml.min.js'
+      script.id = 'MathJax-script'
+      script.async = true
+      document.head.appendChild(script)
+    } else {
+      MathJax.startup.document.state(0)
+      MathJax.texReset()
+      MathJax.typesetPromise()
+    }
+  }
+
+  btf.addGlobalFn('encrypt', loadMathjax, 'mathjax')
+  window.pjax ? loadMathjax() : window.addEventListener('load', loadMathjax)
+})()</script></div><script defer="defer" id="ribbon" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.6/dist/canvas-ribbon.min.js" size="150" alpha="0.6" zIndex="-1" mobile="false" data-click="false"></script><script>(() => {
+  const option = null
+  const config = {"site_uv":true,"site_pv":true,"page_pv":true,"token":"api_2NJl136Zuip7fYCnmlnRY5T4qlPwfW2S"}
+
+  const runTrack = () => {
+    if (typeof umami !== 'undefined' && typeof umami.track === 'function') {
+      umami.track(props => ({ ...props, url: window.location.pathname, title: GLOBAL_CONFIG_SITE.title }))
+    } else {
+      console.warn('Umami Analytics: umami.track is not available')
+    }
+  }
+
+  const loadUmamiJS = () => {
+    btf.getScript('https://analytics.umami.is/script.js', {
+      'data-website-id': 'b0d08a2f-94e7-44c9-ab9a-29ab38ceb70e',
+      'data-auto-track': 'false',
+      ...option
+    }).then(() => {
+      runTrack()
+    }).catch(error => {
+      console.error('Umami Analytics: Error loading script', error)
+    })
+  }
+
+  const getData = async (isPost) => {
+    try {
+      const now = Date.now()
+      const keyUrl = isPost ? `&url=${window.location.pathname}` : ''
+      const headerList = { 'Accept': 'application/json' }
+
+      if (true) {
+        headerList['Authorization'] = `Bearer ${config.token}`
+      } else {
+        headerList['x-umami-api-key'] = config.token
+      }
+
+      const res = await fetch(`https://analytics.umami.is/api/websites/b0d08a2f-94e7-44c9-ab9a-29ab38ceb70e/stats?startAt=0000000000&endAt=${now}${keyUrl}`, {
+        method: "GET",
+        headers: headerList
+      })
+
+      if (!res.ok) {
+        throw new Error(`HTTP error! status: ${res.status}`)
+      }
+
+      return await res.json()
+    } catch (error) {
+      console.error('Umami Analytics: Failed to fetch data', error)
+      throw error
+    }
+  }
+
+  const insertData = async () => {
+    try {
+      if (GLOBAL_CONFIG_SITE.pageType === 'post' && config.page_pv) {
+        const pagePV = document.getElementById('umamiPV')
+        if (pagePV) {
+          const data = await getData(true)
+          if (data && data.pageviews && typeof data.pageviews.value !== 'undefined') {
+            pagePV.textContent = data.pageviews.value
+          } else {
+            console.warn('Umami Analytics: Invalid page view data received')
+          }
+        }
+      }
+
+      if (config.site_uv || config.site_pv) {
+        const data = await getData(false)
+
+        if (config.site_uv) {
+          const siteUV = document.getElementById('umami-site-uv')
+          if (siteUV && data && data.visitors && typeof data.visitors.value !== 'undefined') {
+            siteUV.textContent = data.visitors.value
+          } else if (siteUV) {
+            console.warn('Umami Analytics: Invalid site UV data received')
+          }
+        }
+
+        if (config.site_pv) {
+          const sitePV = document.getElementById('umami-site-pv')
+          if (sitePV && data && data.pageviews && typeof data.pageviews.value !== 'undefined') {
+            sitePV.textContent = data.pageviews.value
+          } else if (sitePV) {
+            console.warn('Umami Analytics: Invalid site PV data received')
+          }
+        }
+      }
+    } catch (error) {
+      console.error('Umami Analytics: Failed to insert data', error)
+    }
+  }
+
+  btf.addGlobalFn('pjaxComplete', runTrack, 'umami_analytics_run_track')
+  btf.addGlobalFn('pjaxComplete', insertData, 'umami_analytics_insert')
+
+
+  loadUmamiJS()
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', insertData)
+  } else {
+    setTimeout(insertData, 100)
+  }
+})()</script><script async data-pjax src="https://static.cloudflareinsights.com/beacon.min.js/vcd15cbe7772f49c399c6a5babf22c1241717689176015"></script><div id="local-search"><div class="search-dialog"><nav class="search-nav"><span class="search-dialog-title">搜索</span><i class="fas fa-spinner fa-pulse" id="loading-status" hidden="hidden"></i><button class="search-close-button"><i class="fas fa-times"></i></button></nav><div class="text-center" id="loading-database"><i class="fas fa-spinner fa-pulse"></i><span>  数据加载中</span></div><div class="local-search-input"><input placeholder="搜索文章" type="text"/></div><hr/><div id="local-search-results"></div><div class="ais-Pagination" id="local-search-pagination" style="display:none;"><ul class="ais-Pagination-list"></ul></div><div id="local-search-stats"></div></div><div id="search-mask"></div><script src="/js/search/local-search.js?v=5.5.2"></script></div></div></body></html>
